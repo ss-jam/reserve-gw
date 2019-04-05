@@ -1,31 +1,32 @@
 package tnsp
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
 
-	"whiteswan.com/elements"
+	"whiteswan.com/rehome"
 )
 
 // Return the output to the event trigger
 func Reply(w http.ResponseWriter, r *http.Request) {
-	pagefmt := "<html>\n<head>%s\n</head>\n<body>\n<h1>%s</h1>\n<div>\n<div>%s</div>\n</div>\n</body>\n</html>"
+	//pagefmt := "<html>\n<head>%s\n</head>\n<body>\n<h1>%s</h1>\n<div>\n<div>%s</div>\n</div>\n</body>\n</html>"
 	url := "https://reserve.tnstateparks.com"
 	resp, err := getSite(url)
 	defer resp.Body.Close()
 	if err == nil {
 		spPage, err := ioutil.ReadAll(resp.Body)
 		if err == nil {
-			doc, err := elements.BatchParse(spPage, url)
-			if err == nil {
-				page := fmt.Sprintf(pagefmt, doc.Head,
-					"Tennessee State Parks alternative resource", doc.Body)
-				io.WriteString(w, page)
-			}
+			doc := rehome.FixAttributes(spPage, url)
+			io.WriteString(w, doc)
+			//doc, err := elements.BatchParse(spPage, url)
+			//if err == nil {
+			//	page := fmt.Sprintf(pagefmt, doc.Head,
+			//		"Tennessee State Parks alternative resource", doc.Body)
+			//	io.WriteString(w, page)
+			//}
 		} else {
 			log.Printf("Could not read body: %s", err)
 		}
@@ -65,6 +66,6 @@ func getSite(s string) (*http.Response, error) {
 		return nil, err
 	}
 
-	log.Printf("Cookies: %s\n", client.Jar)
+	log.Printf("Cookies: %v\n", client.Jar)
 	return resp, nil
 }
