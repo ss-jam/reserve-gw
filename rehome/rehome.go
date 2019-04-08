@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"strings"
 )
 
 // fix any src or href attributes that are relative to the reference URL
@@ -13,46 +12,46 @@ func FixAttributes(b []byte, url string) string {
 	//	he := strings.Index(s, "</head>")
 	//	b := strings.Index(s, "<body")
 	//	be := strings.Index(s, "</body>")
-	s := string(b[:])
+	//s := string(b[:])
 	//log.Printf("Input: %s", s)
 
-	var z bytes.Buffer
-	sz := len(s)
+	var s bytes.Buffer
+	sz := len(b)
 	for i := 0; i < sz && i != -1; {
-		r := strings.Index(s[i:], "src=\"/")
+		r := bytes.Index(b[i:], []byte("src=\"/"))
 		if r >= 0 && r < sz {
 			log.Printf("Found src at %d(%d)", r, i)
-			z.WriteString(s[i : i+r])
-			z.WriteString(fmt.Sprintf("src=\"%s/", url))
-			if i+r+6 > len(s) {
+			s.Write(b[i : i+r])
+			s.Write([]byte(fmt.Sprintf("src=\"%s/", url)))
+			if i+r+6 > len(b) {
 				i = -1
 			} else {
 				i += r + 6
 			}
 		} else {
-			z.WriteString(s[i:])
+			s.Write(b[i:])
 			i = -1
 		}
 	}
 
-	s = z.String()
+	//s = z.String()
 	//log.Printf("SRC Check: %s", s)
 
 	var q bytes.Buffer
-	sz = len(s)
+	sz = s.Len()
 	for i := 0; i < sz && i != -1; {
-		r := strings.Index(s[i:], "href=\"/")
+		r := bytes.Index(s.Bytes()[i:], []byte("href=\"/"))
 		if r >= 0 && r < sz {
 			log.Printf("Found href at %d", r)
-			q.WriteString(s[i : i+r])
-			q.WriteString(fmt.Sprintf("href=\"%s/", url))
-			if i+r+7 > len(s) {
+			q.Write(s.Bytes()[i : i+r])
+			q.Write([]byte(fmt.Sprintf("href=\"%s/", url)))
+			if i+r+7 > s.Len() {
 				i = -1
 			} else {
 				i += r + 7
 			}
 		} else {
-			q.WriteString(s[i:])
+			q.Write(s.Bytes()[i:])
 			i = -1
 		}
 	}

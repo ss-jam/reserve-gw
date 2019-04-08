@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"whiteswan.com/rehome"
+	"whiteswan.com/manipulate"
 )
 
 // Return the output to the event trigger
@@ -19,7 +19,7 @@ func Reply(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		spPage, err := ioutil.ReadAll(resp.Body)
 		if err == nil {
-			doc := rehome.FixAttributes(spPage, url)
+			doc := manipulate.SimpleBatch(spPage, url)
 			io.WriteString(w, doc)
 			//doc, err := elements.BatchParse(spPage, url)
 			//if err == nil {
