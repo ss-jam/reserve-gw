@@ -16,7 +16,8 @@ type MyNode struct {
 	Raw      []byte
 }
 
-func fixUrl(buf *bytes.Buffer, raw []byte, attrs []html.Attribute, look4 string, url string) {
+func fixUrl(raw []byte, attrs []html.Attribute, look4 string, url string) []byte {
+	var buf bytes.Buffer
 	found := false
 	for _, attr := range attrs {
 		if attr.Key == look4 && attr.Val[0] == '/' {
@@ -28,11 +29,13 @@ func fixUrl(buf *bytes.Buffer, raw []byte, attrs []html.Attribute, look4 string,
 		}
 	}
 	if !found {
-		buf.Write(raw)
+		return raw
+	} else {
+		return buf.Bytes()
 	}
 }
 
-func SimpleBatch(b []byte, url string) string {
+func SimpleBatch(b []byte, url string, ref string) string {
 	z := html.NewTokenizer(bytes.NewReader(b))
 
 	done := false
@@ -56,7 +59,7 @@ func SimpleBatch(b []byte, url string) string {
 			log.Printf("Self tag: %s: %s", t.DataAtom, raw)
 			switch t.DataAtom {
 			case atom.Img:
-				fixUrl(&buf, raw, t.Attr, "src", url)
+				buf.Write(fixUrl(raw, t.Attr, "src", url))
 			default:
 				buf.Write(raw)
 			}
@@ -66,12 +69,14 @@ func SimpleBatch(b []byte, url string) string {
 			log.Printf("Start tag: %s: %s", t.DataAtom, raw)
 			switch t.DataAtom {
 			case atom.Script:
-				fixUrl(&buf, raw, t.Attr, "src", url)
+				buf.Write(fixUrl(raw, t.Attr, "src", url))
 			// Link nodes in HEAD are not self closing even though you may think they should be
 			case atom.Link:
-				fixUrl(&buf, raw, t.Attr, "href", url)
+				buf.Write(fixUrl(raw, t.Attr, "href", url))
+			case atom.A:
+				buf.Write(fixUrl(raw, t.Attr, "href", ref))
 			case atom.Img:
-				fixUrl(&buf, raw, t.Attr, "src", url)
+				buf.Write(fixUrl(raw, t.Attr, "src", url))
 			default:
 				buf.Write(raw)
 			}

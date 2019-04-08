@@ -19,7 +19,7 @@ func Reply(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		spPage, err := ioutil.ReadAll(resp.Body)
 		if err == nil {
-			doc := manipulate.SimpleBatch(spPage, url)
+			doc := manipulate.SimpleBatch(spPage, url, "tnsp")
 			io.WriteString(w, doc)
 			//doc, err := elements.BatchParse(spPage, url)
 			//if err == nil {
