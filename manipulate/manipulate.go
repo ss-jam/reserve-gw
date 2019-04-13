@@ -16,11 +16,32 @@ type MyNode struct {
 	Raw      []byte
 }
 
+func acquireLink(raw []byte, attrs []html.Attribute, look4 string, url string) ([]byte, string) {
+	var buf bytes.Buffer
+	found := false
+	var m string
+	for _, attr := range attrs {
+		if attr.Key == look4 && attr.Val[0] == '/' {
+			m = fmt.Sprintf("%s%s", url, attr.Val)
+			i := bytes.Index(raw, []byte(fmt.Sprintf("%s=\"", look4)))
+			buf.Write(raw[:i])
+			buf.Write([]byte(fmt.Sprintf("%s=\"%s", look4, url)))
+			buf.Write(raw[i+len(look4)+2:])
+			found = true
+		}
+	}
+	if !found {
+		return raw, m
+	} else {
+		return buf.Bytes(), m
+	}
+}
+
 func fixUrl(raw []byte, attrs []html.Attribute, look4 string, url string) []byte {
 	var buf bytes.Buffer
 	found := false
 	for _, attr := range attrs {
-		if attr.Key == look4 && attr.Val[0] == '/' {
+		if attr.Key == look4 && attr.Val[0] == '/' && attr.Val[1] != '/' {
 			i := bytes.Index(raw, []byte(fmt.Sprintf("%s=\"", look4)))
 			buf.Write(raw[:i])
 			buf.Write([]byte(fmt.Sprintf("%s=\"%s", look4, url)))
@@ -35,11 +56,12 @@ func fixUrl(raw []byte, attrs []html.Attribute, look4 string, url string) []byte
 	}
 }
 
-func SimpleBatch(b []byte, url string, ref string) string {
+func SimpleBatch(b []byte, url string, ref string) (string, []string) {
 	z := html.NewTokenizer(bytes.NewReader(b))
 
 	done := false
 	var buf bytes.Buffer
+	m := []string{""}
 	for !done {
 		tt := z.Next()
 		switch tt {
@@ -56,7 +78,7 @@ func SimpleBatch(b []byte, url string, ref string) string {
 		case html.SelfClosingTagToken:
 			raw := z.Raw()
 			t := z.Token()
-			log.Printf("Self tag: %s: %s", t.DataAtom, raw)
+			//log.Printf("Self tag: %s: %s", t.DataAtom, raw)
 			switch t.DataAtom {
 			case atom.Img:
 				buf.Write(fixUrl(raw, t.Attr, "src", url))
@@ -66,7 +88,7 @@ func SimpleBatch(b []byte, url string, ref string) string {
 		case html.StartTagToken:
 			raw := z.Raw()
 			t := z.Token()
-			log.Printf("Start tag: %s: %s", t.DataAtom, raw)
+			//log.Printf("Start tag: %s: %s", t.DataAtom, raw)
 			switch t.DataAtom {
 			case atom.Script:
 				buf.Write(fixUrl(raw, t.Attr, "src", url))
@@ -74,7 +96,9 @@ func SimpleBatch(b []byte, url string, ref string) string {
 			case atom.Link:
 				buf.Write(fixUrl(raw, t.Attr, "href", url))
 			case atom.A:
-				buf.Write(fixUrl(raw, t.Attr, "href", ref))
+				res, l := acquireLink(raw, t.Attr, "href", ref)
+				m = append(m, l)
+				buf.Write(res)
 			case atom.Img:
 				buf.Write(fixUrl(raw, t.Attr, "src", url))
 			default:
@@ -82,5 +106,5 @@ func SimpleBatch(b []byte, url string, ref string) string {
 			}
 		}
 	}
-	return buf.String()
+	return buf.String(), m
 }
