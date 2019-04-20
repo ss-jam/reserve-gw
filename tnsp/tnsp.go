@@ -13,16 +13,35 @@ import (
 
 const url = "https://reserve.tnstateparks.com"
 
+var tr *http.Transport
+var client *http.Client
+
 // Return the output to the event trigger
 func Reply(w http.ResponseWriter, r *http.Request) {
 	//pagefmt := "<html>\n<head>%s\n</head>\n<body>\n<h1>%s</h1>\n<div>\n<div>%s</div>\n</div>\n</body>\n</html>"
 	log.Printf("TNSP: %s", r.URL.String())
-	p := strings.Split(r.URL.String(), "/")
+	p := strings.Split(r.URL.Path, "/")
 	sel := ""
 	if p[1] == "tnsp" && len(p) > 2 {
-		sel = r.URL.String()[5:]
+		sel = r.URL.Path[5:]
 	}
-	resp, err := getSite(url + sel)
+	var resp *http.Response
+	var err error
+	switch r.Method {
+	case "GET":
+		resp, err = getSite(url + sel)
+	case "POST":
+		err := r.ParseForm()
+		if err != nil {
+			log.Printf("Error tyring to parse form: %s", err)
+		}
+		log.Printf("Query: %q", r.PostForm)
+		resp, err = postSite(url+sel, r.Header["Content-Type"][0], strings.NewReader(r.PostForm.Encode()))
+	default:
+		log.Printf("Unimplemented method: %s", r.Method)
+		http.Error(w, "Something unexpected this way comes", 404)
+		return
+	}
 	defer resp.Body.Close()
 	if err == nil {
 		spPage, err := ioutil.ReadAll(resp.Body)
@@ -76,18 +95,31 @@ func redirectPolicy(req *http.Request, via []*http.Request) error {
 	return nil
 }
 
-// This should be moved to its own package for getting reservation and other sites
-func getSite(s string) (*http.Response, error) {
-	tr := &http.Transport{
+func Initialize() {
+	tr = &http.Transport{
 		MaxIdleConns:       10,
 		IdleConnTimeout:    30 * time.Second,
 		DisableCompression: true,
 	}
 
-	client := &http.Client{
+	client = &http.Client{
 		CheckRedirect: redirectPolicy,
 		Transport:     tr,
 	}
+}
+
+// Used for local referrer relative links of remote content
+func GetRemote(s string) (*http.Response, error) {
+	resp, err := client.Get(s)
+	if err != nil {
+		log.Printf("Error getting remote: %s", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
+// This should be moved to its own package for getting reservation and other sites
+func getSite(s string) (*http.Response, error) {
 	resp, err := client.Get(s)
 	if err != nil {
 		log.Printf("Cannot create new request: %s", err)
@@ -95,5 +127,17 @@ func getSite(s string) (*http.Response, error) {
 	}
 
 	log.Printf("Cookies: %v\n", client.Jar)
+	return resp, nil
+}
+
+func postSite(u string, c string, b io.Reader) (*http.Response, error) {
+	log.Printf("POST URL: %s, Content-Type: %s", u, c)
+	resp, err := client.Post(u, c, b)
+	if err != nil {
+		log.Printf("Cannot create new request: %s", err)
+		return nil, err
+	}
+
+	log.Printf("POST SITE: %q", resp)
 	return resp, nil
 }

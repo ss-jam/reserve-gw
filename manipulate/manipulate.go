@@ -21,7 +21,7 @@ func acquireLink(raw []byte, attrs []html.Attribute, look4 string, url string) (
 	found := false
 	var m string
 	for _, attr := range attrs {
-		if attr.Key == look4 && attr.Val[0] == '/' {
+		if attr.Key == look4 && attr.Val != "" && attr.Val[0] == '/' {
 			m = fmt.Sprintf("%s%s", url, attr.Val)
 			i := bytes.Index(raw, []byte(fmt.Sprintf("%s=\"", look4)))
 			buf.Write(raw[:i])
@@ -41,7 +41,7 @@ func fixUrl(raw []byte, attrs []html.Attribute, look4 string, url string) []byte
 	var buf bytes.Buffer
 	found := false
 	for _, attr := range attrs {
-		if attr.Key == look4 && attr.Val[0] == '/' && attr.Val[1] != '/' {
+		if attr.Key == look4 && attr.Val != "" && attr.Val[0] == '/' && attr.Val[1] != '/' {
 			i := bytes.Index(raw, []byte(fmt.Sprintf("%s=\"", look4)))
 			buf.Write(raw[:i])
 			buf.Write([]byte(fmt.Sprintf("%s=\"%s", look4, url)))
@@ -56,6 +56,7 @@ func fixUrl(raw []byte, attrs []html.Attribute, look4 string, url string) []byte
 	}
 }
 
+// Simple changes to the relative links as a batch process
 func SimpleBatch(b []byte, url string, ref string) (string, []string) {
 	z := html.NewTokenizer(bytes.NewReader(b))
 
@@ -80,7 +81,7 @@ func SimpleBatch(b []byte, url string, ref string) (string, []string) {
 			t := z.Token()
 			//log.Printf("Self tag: %s: %s", t.DataAtom, raw)
 			switch t.DataAtom {
-			case atom.Img:
+			case atom.Img, atom.Image:
 				buf.Write(fixUrl(raw, t.Attr, "src", url))
 			default:
 				buf.Write(raw)
@@ -99,7 +100,7 @@ func SimpleBatch(b []byte, url string, ref string) (string, []string) {
 				res, l := acquireLink(raw, t.Attr, "href", ref)
 				m = append(m, l)
 				buf.Write(res)
-			case atom.Img:
+			case atom.Img, atom.Image:
 				buf.Write(fixUrl(raw, t.Attr, "src", url))
 			default:
 				buf.Write(raw)
