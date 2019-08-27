@@ -2,13 +2,12 @@ package multiplex
 
 import (
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 
-	"whiteswan.com/tnsp"
+	"whiteswan.com/remote"
 )
 
 // The GET method handler
@@ -29,7 +28,7 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 		// Looking for any sub references as in /hello/*
 		// To be more secure, this should be assigned to
 		// a key in the structure instead of always processed.
-		log.Printf("Trying again: %s (PATH: %s [QUERY: %q])", r.URL.String(), r.URL.Path, r.URL.Query())
+		log.Printf("Trying again: %s (PATH: %s [QUERY: %q, HEADER: %q])", r.URL.String(), r.URL.Path, r.URL.Query(), r.Header)
 		p := strings.Split(r.URL.Path, "/")
 		log.Printf("Looking for registered root in %q", p)
 		if h, ok := mux["/"+p[1]]; ok && h.EvalSub {
@@ -66,25 +65,16 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 			//log.Printf("TEST: %s", t)
 			newr := mux[base].RefURL + r.URL.Path
 			log.Printf("URL: %s", newr)
-			resp, err := tnsp.GetRemote(newr)
+			resp, err := remote.GetRemote(newr, r.Header)
 			if err != nil {
 				log.Printf("Error getting link: %s", err)
 				return
 			}
-			defer resp.Body.Close()
-			bod, err := ioutil.ReadAll(resp.Body)
-			log.Printf("Resp Header: %q", resp.Header)
-			for k, vs := range resp.Header {
-				for _, v := range vs {
-					w.Header().Set(k, v)
-				}
-			}
+			err = remote.Write(w, resp)
 			if err != nil {
-				http.Error(w, err.Error(), resp.StatusCode)
+				log.Printf("ERROR writing response: %s", err)
 				return
 			}
-			w.WriteHeader(resp.StatusCode)
-			w.Write(bod)
 		}
 	}
 }

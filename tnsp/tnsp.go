@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"whiteswan.com/remote"
+
 	"whiteswan.com/manipulate"
 )
 
@@ -29,7 +31,18 @@ func Reply(w http.ResponseWriter, r *http.Request) {
 	var err error
 	switch r.Method {
 	case "GET":
-		resp, err = getSite(url + sel)
+		resp, err = remote.GetRemote(url+sel, r.Header)
+		//resp, err = getSite(url + sel)
+		if err != nil {
+			log.Printf("ERROR getting remote: %s", err)
+			http.Error(w, err.Error(), resp.StatusCode)
+			return
+		}
+		err = remote.Write(w, resp)
+		if err != nil {
+			log.Printf("ERROR: could not write response: %s", err)
+			return
+		}
 	case "POST":
 		err := r.ParseForm()
 		if err != nil {
@@ -37,29 +50,29 @@ func Reply(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Printf("Query: %q", r.PostForm)
 		resp, err = postSite(url+sel, r.Header["Content-Type"][0], strings.NewReader(r.PostForm.Encode()))
+		defer resp.Body.Close()
+		if err == nil {
+			spPage, err := ioutil.ReadAll(resp.Body)
+			if err == nil {
+				doc, l := manipulate.SimpleBatch(spPage, url, "tnsp")
+				io.WriteString(w, doc)
+				log.Printf("Changed links: %v", l)
+				//doc, err := elements.BatchParse(spPage, url)
+				//if err == nil {
+				//	page := fmt.Sprintf(pagefmt, doc.Head,
+				//		"Tennessee State Parks alternative resource", doc.Body)
+				//	io.WriteString(w, page)
+				//}
+			} else {
+				log.Printf("Could not read body: %s", err)
+			}
+		} else {
+			io.WriteString(w, "Welcome to the Tennessee State Parks alternative booking resource.")
+		}
 	default:
 		log.Printf("Unimplemented method: %s", r.Method)
 		http.Error(w, "Something unexpected this way comes", 404)
 		return
-	}
-	defer resp.Body.Close()
-	if err == nil {
-		spPage, err := ioutil.ReadAll(resp.Body)
-		if err == nil {
-			doc, l := manipulate.SimpleBatch(spPage, url, "tnsp")
-			io.WriteString(w, doc)
-			log.Printf("Changed links: %v", l)
-			//doc, err := elements.BatchParse(spPage, url)
-			//if err == nil {
-			//	page := fmt.Sprintf(pagefmt, doc.Head,
-			//		"Tennessee State Parks alternative resource", doc.Body)
-			//	io.WriteString(w, page)
-			//}
-		} else {
-			log.Printf("Could not read body: %s", err)
-		}
-	} else {
-		io.WriteString(w, "Welcome to the Tennessee State Parks alternative booking resource.")
 	}
 }
 
@@ -106,16 +119,6 @@ func Initialize() {
 		CheckRedirect: redirectPolicy,
 		Transport:     tr,
 	}
-}
-
-// Used for local referrer relative links of remote content
-func GetRemote(s string) (*http.Response, error) {
-	resp, err := client.Get(s)
-	if err != nil {
-		log.Printf("Error getting remote: %s", err)
-		return nil, err
-	}
-	return resp, nil
 }
 
 // This should be moved to its own package for getting reservation and other sites

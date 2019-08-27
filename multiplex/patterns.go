@@ -1,15 +1,12 @@
 package multiplex
 
 import (
-	"io"
 	"log"
 	"net/http"
 	"regexp"
-
-	"whiteswan.com/tnsp"
-	"whiteswan.com/txsp"
 )
 
+// Route pattern matching structure for server
 type Multiplex struct {
 	RefURL  string
 	EvalSub bool
@@ -18,15 +15,12 @@ type Multiplex struct {
 
 var mux = make(map[string]Multiplex)
 
-// Initialize the system patterns
-func Initialize() {
-	mux = map[string]Multiplex{
-		"/":     {"/", false, hello},
-		"/tnsp": {"https://reserve.tnstateparks.com", true, tnsp.Reply},
-		"/txsp": {"https://txsp.com", true, txsp.Reply},
-	}
+func AddMux(s string, m Multiplex) {
+	mux[s] = m
+}
 
-	tnsp.Initialize()
+func GetMux(s string) Multiplex {
+	return mux[s]
 }
 
 // Find the Path of a URL string
@@ -41,7 +35,4 @@ func ParseUrl(s string) string {
 	} else {
 		return ""
 	}
-}
-func hello(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Hello world!")
 }
