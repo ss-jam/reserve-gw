@@ -100,7 +100,7 @@ func SimpleBatch(b []byte, url string, ref string) (string, []string) {
 				res, l := acquireLink(raw, t.Attr, "href", ref)
 				m = append(m, l)
 				buf.Write(res)
-			case atom.Img, atom.Image:
+			case atom.Img:
 				buf.Write(fixUrl(raw, t.Attr, "src", url))
 			default:
 				buf.Write(raw)

@@ -1,14 +1,33 @@
 package main
 
 import (
+	"io"
 	"log"
 	"net/http"
 
 	"whiteswan.com/multiplex"
+	"whiteswan.com/remote"
+	"whiteswan.com/tnsp"
+	"whiteswan.com/txsp"
 )
 
+// Initialize the system patterns
+func Initialize() {
+	remote.InitRemote()
+
+	multiplex.AddMux("/", multiplex.Multiplex{"/", false, hello})
+	multiplex.AddMux("/tnsp", multiplex.Multiplex{"https://reserve.tnstateparks.com", true, tnsp.Reply})
+	multiplex.AddMux("/txsp", multiplex.Multiplex{"https://txsp.com", true, txsp.Reply})
+
+	//tnsp.Initialize()
+}
+
+func hello(w http.ResponseWriter, r *http.Request) {
+	io.WriteString(w, "Hello world!")
+}
+
 func main() {
-	multiplex.Initialize()
+	Initialize()
 
 	server := http.Server{
 		Addr:    ":8000",
