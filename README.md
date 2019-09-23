@@ -9,7 +9,8 @@ transparently as they are and without impact to any development process or flow.
 
 Note: these reservation systems consist of camping and day use sites across the two states,
 Tennessee and Texas. During high seasons when lengths of stay at any one camp sight is limited,
-patrons try to book multiple camping sights at a location to cover th
+patrons try to book multiple camping sights at a location to cover their dates of interest.
+Currently this is done only via a phone call to human reservation specialist.
 
 #### Improve search capability:
 + Turn from relatively flat results based upon date ranges into multi-varied results of possible combinations over the date ranges;
