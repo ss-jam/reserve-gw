@@ -10,7 +10,7 @@ transparently as they are and without impact to any development process or flow.
 Note: these reservation systems consist of camping and day use sites across the two states,
 Tennessee and Texas. During high seasons when lengths of stay at any one campsite is limited,
 patrons try to book multiple campsites at a location to cover their dates of interest.
-Currently this is done only via a phone call to human reservation specialist.
+This currently is done only via a phone call to human reservation specialist.
 
 ### Goals:
 #### Improve search capability:
@@ -24,3 +24,15 @@ Currently this is done only via a phone call to human reservation specialist.
 ### Status:
 Currently, the project includes the interactive initial concept. The _first phase_ is to complete the backend result combinations construction for the frontend presentation. The _second phase_ would then tackle the semi-autonomous search mechanism, and a _third phase_ would implement a 
 learning knowledge base for users.
+
+### Building and running:
++ Clone the repository into your **Go src** directory
++ Change the working directory to the reserve-gw directory
++ Execute 'go build ./gateway'
++ Assuming it all builds correctly, execute './gateway'
++ Open a browser tab to localhost:8000/tnsp and begin to use the gateway
+
+The prototype will start a server listening on the default port. The port value for the 
+server is configured to a default value 8000, which can be overridden with a --port <value>
+command line switch. The debug messages produced on the console do not yet have
+(and may never have) a verbosity switch. If you change the port number, then browse to localhost:<new port number>/tnsp.
