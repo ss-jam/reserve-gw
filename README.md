@@ -12,6 +12,7 @@ Tennessee and Texas. During high seasons when lengths of stay at any one campsit
 patrons try to book multiple campsites at a location to cover their dates of interest.
 Currently this is done only via a phone call to human reservation specialist.
 
+### Goals:
 #### Improve search capability:
 + Turn from relatively flat results based upon date ranges into multi-varied results of possible combinations over the date ranges;
 + Present the results in a more informative and sortable way to provide all the information available cleanly and quickly;
