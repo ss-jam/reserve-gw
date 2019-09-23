@@ -15,6 +15,7 @@ import (
 func Initialize() {
 	remote.InitRemote()
 
+	// Right now, ignore the return value and assume success :)
 	multiplex.AddMux("/", multiplex.Multiplex{"/", false, hello})
 	multiplex.AddMux("/tnsp", multiplex.Multiplex{"https://reserve.tnstateparks.com", true, tnsp.Reply})
 	multiplex.AddMux("/txsp", multiplex.Multiplex{"https://txsp.com", true, txsp.Reply})
@@ -22,6 +23,7 @@ func Initialize() {
 	//tnsp.Initialize()
 }
 
+// Placeholder function mostly for runtime testing
 func hello(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "Hello world!")
 }

@@ -15,10 +15,20 @@ type Multiplex struct {
 
 var mux = make(map[string]Multiplex)
 
-func AddMux(s string, m Multiplex) {
-	mux[s] = m
+// Add a Multiplex struct of a page reference - 
+// TODO: add verification of Multiplex values 
+func AddMux(s string, m Multiplex) bool {
+	if mux != nil && mux[s].RefURL != "" && m.RefURL != "" {
+		mux[s] = m
+		return true
+	}
+	return false
 }
 
+// Get the Multiplex page reference coresponding to the key
+// TODO: add return of error or bool along with the mux value
+// 	     reflecting if the existence of a Multiplex structure
+//       corresponding to the key
 func GetMux(s string) Multiplex {
 	return mux[s]
 }
