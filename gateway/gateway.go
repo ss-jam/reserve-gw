@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -31,8 +33,12 @@ func hello(w http.ResponseWriter, r *http.Request) {
 func main() {
 	Initialize()
 
+	portPrt := flag.Uint("port", 8000, "Override the port that the server uses.")
+
+	flag.Parse()
+
 	server := http.Server{
-		Addr:    ":8000",
+		Addr:    ":" + fmt.Sprint(*portPrt),
 		Handler: &myHandler{},
 	}
 
