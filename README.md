@@ -35,4 +35,4 @@ learning knowledge base for users.
 The prototype will start a server listening on the default port. The port value for the 
 server is configured to a default value 8000, which can be overridden with a --port <value>
 command line switch. The debug messages produced on the console do not yet have
-(and may never have) a verbosity switch. If you change the port number, then browse to localhost:<new port number>/tnsp.
+(and may never have) a verbosity switch. If you change the port number, then browse to localhost:\<new port number\>/tnsp.
