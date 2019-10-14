@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"whiteswan.com/remote"
+	"reserve-gw/remote"
 
-	"whiteswan.com/manipulate"
+	"reserve-gw/manipulate"
 )
 
 const url = "https://reserve.tnstateparks.com"
@@ -31,7 +31,7 @@ func Reply(w http.ResponseWriter, r *http.Request) {
 	var err error
 	switch r.Method {
 	case "GET":
-		resp, err = remote.GetRemote(url+sel, r.Header)
+		resp, err = remote.GetRemote(url+sel, r.Header, r.Method)
 		//resp, err = getSite(url + sel)
 		if err != nil {
 			log.Printf("ERROR getting remote: %s", err)

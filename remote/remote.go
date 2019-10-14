@@ -1,6 +1,7 @@
 package remote
 
 import (
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 var tr *http.Transport
 var client *http.Client
 
+// InitRemote Initialize the remote client transport
 func InitRemote() {
 	tr = &http.Transport{
 		MaxIdleConns:       10,
@@ -23,9 +25,13 @@ func InitRemote() {
 	}
 }
 
-// Used for local referrer relative links of remote content
-func GetRemote(s string, h http.Header) (*http.Response, error) {
-	req, err := http.NewRequest("GET", s, nil)
+// GetRemote Used for local referrer relative links of remote content
+func GetRemote(s string, h http.Header, m string) (*http.Response, error) {
+	if m != "GET" && m != "POST" {
+		return nil, errors.New("Can only handle GET and POST requests")
+	}
+
+	req, err := http.NewRequest(m, s, nil)
 	if err != nil {
 		log.Printf("Error constructing request: %s", err)
 		return nil, err

@@ -7,10 +7,10 @@ import (
 	"log"
 	"net/http"
 
-	"whiteswan.com/multiplex"
-	"whiteswan.com/remote"
-	"whiteswan.com/tnsp"
-	"whiteswan.com/txsp"
+	"reserve-gw/multiplex"
+	"reserve-gw/remote"
+	"reserve-gw/tnsp"
+	"reserve-gw/txsp"
 )
 
 // Initialize the system patterns
