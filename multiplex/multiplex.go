@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"reserve-gw/remote"
+	"github.com/ss-jam/reserve-gw/remote"
 )
 
 func getBase(s string) string {

@@ -7,10 +7,10 @@ import (
 	"log"
 	"net/http"
 
-	"reserve-gw/multiplex"
-	"reserve-gw/remote"
-	"reserve-gw/tnsp"
-	"reserve-gw/txsp"
+	"github.com/ss-jam/reserve-gw/multiplex"
+	"github.com/ss-jam/reserve-gw/remote"
+	"github.com/ss-jam/reserve-gw/tnsp"
+	"github.com/ss-jam/reserve-gw/txsp"
 )
 
 // Initialize the system patterns

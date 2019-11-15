@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"reserve-gw/remote"
+	"github.com/ss-jam/reserve-gw/remote"
 
-	"reserve-gw/manipulate"
+	"github.com/ss-jam/reserve-gw/manipulate"
 )
 
 const url = "https://reserve.tnstateparks.com"
